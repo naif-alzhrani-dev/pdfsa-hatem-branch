@@ -1,0 +1,66 @@
+/* شبكة الخط (مواصفة 👩‍🎨 لمى، docs/logs/fonts-picker-lama-spec.md): مشتركة بين «إعداد خطاب» (أزرار role="radio" بـaria-checked)
+   وأدوات الكتابة (src/font-pick.ts: label فيه radio أصليّ). نُقلت من src/letter/letter.css كما هي، ولم تُنسخ.
+   الحركة transform وopacity وحدهما وأقلّ من 300ms، ومع تقليل الحركة بلا تصغير. */
+
+/* --lf لكل خط: الستّة على الخطاب كله (٠-٦)، والمسيري والرقعة لأدوات الكتابة */
+.lf-naskh { --lf: "L naskh", serif; }
+.lf-amiri { --lf: "L amiri", serif; }
+.lf-markazi { --lf: "L markazi", serif; }
+.lf-plex { --lf: "L plex", sans-serif; }
+.lf-almarai { --lf: "L almarai", sans-serif; }
+.lf-kufi { --lf: "L kufi", sans-serif; }
+.lf-messiri { --lf: "L messiri", sans-serif; }
+.lf-ruqaa { --lf: "L ruqaa", serif; }
+
+.lt-fonts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lt-fo { position: relative; block-size: 44px; border: 0; border-radius: 12px; background: var(--card); box-shadow: var(--lift-paper); font-family: var(--lf); font-size: 18px; font-weight: 400; color: var(--ink-1); cursor: pointer; }
+.lt-fo[aria-checked="true"], label.lt-fo:has(> :checked) { outline: 2px solid var(--mark); outline-offset: 3px; }
+.lt-fo .spinner { position: absolute; inset-inline-end: 10px; inset-block-start: 13px; }
+
+/* ───────── أدوات الكتابة ───────── */
+.font-pick { margin: 0; padding: 0; border: 0; min-inline-size: 0; }
+.font-pick > legend { padding: 0; margin-block-end: var(--s2); }
+/* الاسم صورةٌ بخطّه (src/font-names.ts)، فلا يُنزَّل خطٌّ لعرض الشبكة */
+.fo-name { display: block; fill: currentColor; }
+label.lt-fo { display: grid; place-items: center; line-height: 1; -webkit-tap-highlight-color: transparent; transition: transform var(--d-press) var(--ease-out); }
+label.lt-fo[hidden] { display: none; }
+label.lt-fo:active { transform: scale(.97); }
+label.lt-fo:has(:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.font-pick:disabled label.lt-fo { cursor: default; color: var(--ink-4); }
+/* مؤشر التحميل بعد 150ms وبتلاشٍ 120ms: التنزيل السريع لا يومض */
+.font-pick .spinner { animation: spin 800ms linear infinite, fp-in 120ms var(--ease-out) 150ms both; }
+.font-pick-err { margin: 0; font-size: var(--t-meta); line-height: var(--lh-tight); color: var(--danger); }
+.font-pick-err:not(:empty) { margin-block-start: var(--s2); animation: fp-in 150ms var(--ease-out); }
+@keyframes fp-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  label.lt-fo:active { transform: none; }
+}
+
+/* ───────── تعبئة النماذج تحت 1024px: الشبكة شريط فوق لوحة المفاتيح (docs/logs/fonts-layout-lama-spec.md ٢، src/tools/fill-form.ts) ─────────
+   --kb: ما تغطّيه لوحة المفاتيح من أسفل الصفحة (visualViewport). دخول 150ms وخروج 120ms، ومع تقليل الحركة تلاشٍ وحده. */
+.ff-font-strip {
+  position: fixed; inset-inline: 0; inset-block-end: 0; z-index: 20;
+  padding: var(--s2) var(--s4) calc(var(--s2) + env(safe-area-inset-bottom));
+  background: var(--sheet); border-block-start: 1px solid var(--hair);
+  transform: translateY(calc(-1 * var(--kb, 0px)));
+}
+.ff-font-strip:not([hidden]) { animation: ff-strip-in 150ms var(--ease-out); }
+.ff-font-strip.closing { opacity: 0; transform: translateY(calc(8px - var(--kb, 0px))); transition: opacity 120ms var(--ease-out), transform 120ms var(--ease-out); pointer-events: none; }
+@keyframes ff-strip-in { from { opacity: 0; transform: translateY(calc(8px - var(--kb, 0px))); } }
+.ff-font-strip .font-pick { display: flex; flex-direction: column; }
+.ff-font-strip .font-pick > legend { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: -1px; padding: 0; }
+.ff-font-strip .font-pick-err { order: -1; }
+.ff-font-strip .font-pick-err:not(:empty) { margin-block: 0 var(--s1); }
+.ff-font-strip .lt-fonts {
+  grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: max-content;
+  overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding-block: 5px; padding-inline: 5px;
+}
+.ff-font-strip .lt-fonts::-webkit-scrollbar { display: none; }
+.ff-font-strip label.lt-fo { min-inline-size: 72px; padding-inline: var(--s4); scroll-snap-align: center; }
+/* على الجوال العمود بعد الصفحات: آخر الصفحة كلها (و«احفظ الملف») يُمرَّر فوق الشريط */
+.tool:has(.ff-font-strip:not([hidden])) { padding-block-end: calc(76px + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) { .ff-font-strip { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ff-font-strip:not([hidden]) { animation: fp-in 150ms linear; }
+  .ff-font-strip.closing { transform: translateY(calc(-1 * var(--kb, 0px))); transition: opacity 120ms linear; }
+}

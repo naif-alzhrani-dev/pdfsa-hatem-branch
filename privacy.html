@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F8F8FB" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000E1F" />
+    <meta name="color-scheme" content="light dark" />
+    <!-- الوضع المحفوظ قبل الرسم الأول (src/theme.ts): ملف من الأصل نفسه، فلا تمنعه سياسة الأمان -->
+    <script src="/theme-boot.js"></script>
+    <meta name="referrer" content="no-referrer" />
+    <meta name="description" content="سياسة الخصوصية في PDFsa: الملفات تُعالَج كلها على جهازك ولا تُرفع إلى أي خادم." />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/favicon-16.png" sizes="16x16" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- ملف CSS من الأصل نفسه (style-src 'self')، بلا style ولا script مضمَّنين -->
+    <link rel="stylesheet" href="/src/privacy.css" />
+    <!-- عدّاد الزوار في الإنتاج وحده (src/analytics.ts): ملف من الأصل نفسه، لا سكربت مضمَّن -->
+    <script type="module" src="/src/analytics-boot.ts"></script>
+    <title>سياسة الخصوصية | PDFsa</title>
+  </head>
+  <body>
+    <main class="policy">
+      <header class="policy-top">
+        <a class="policy-back" href="/" data-test="privacy-home">العودة إلى الرئيسية</a>
+        <img class="policy-logo logo-light" src="/logo-pdfsa.png" alt="PDFsa" width="600" height="147" />
+        <img class="policy-logo logo-dark" src="/logo-pdfsa-dark.png" alt="PDFsa" width="600" height="147" />
+      </header>
+      <article class="policy-sheet">
+        <h1>سياسة الخصوصية</h1>
+        <p>PDFsa أدوات لملفات PDF، منها التوقيع والختم والدمج والتقسيم ومسح الأوراق والضغط والحماية والفحص، وتُعالَج الملفات فيها كلها على جهازك.</p>
+
+        <h2>ملفاتك</h2>
+        <p>لا تُرفع ملفاتك إلى أي خادم، ولا تصلنا نسخة منها. تُفتح وتُعالَج في ذاكرة جهازك، وتُحفظ أو تُشارك من جهازك مباشرة.</p>
+
+        <h2>ما يُحفظ على جهازك</h2>
+        <p>يُحفظ على جهازك وحده: التوقيع والختم المحفوظان، وخلفية الخطاب، وآخر نصّ كتبته، واختياراتك (لون الحبر وإعدادات المسح). يمكنك حذف التوقيع والختم من داخل الأداة، ويُحذف الباقي بمسح بيانات الموقع من إعدادات المتصفح.</p>
+
+        <h2>الكاميرا</h2>
+        <p>تُستعمل الكاميرا للمسح فحسب، وبإذنك. لا يُسجَّل فيديو، ولا تُرسل أي صورة، وتبقى الصفحات المصوّرة على جهازك حتى تحفظها. وتتوقّف الكاميرا عند الخروج من المسح أو الانتقال إلى تطبيق آخر.</p>
+
+        <h2 id="inspect">فحص الملفات</h2>
+        <p>تقرأ أداة «فحص ملف» ما بداخل ملف PDF لتكشف الأوامر المخفية التي قد تعمل وحدها عند فتحه. تجري القراءة على جهازك، ولا يُرفع الملف إلى أي خادم.</p>
+        <p><strong>ما نفحصه:</strong></p>
+        <p>أوامر تعمل تلقائياً عند فتح الملف، أو عند فتح صفحة منه أو إغلاقها. ومنها أوامر JavaScript، وهي برامج صغيرة مكتوبة داخل الملف.</p>
+        <p>والأوامر التي تشغّل برنامجاً أو تفتح ملفاً على جهازك.</p>
+        <p>والروابط التي تنفّذ أوامر أو تفتح ملفات.</p>
+        <p>وأزرار في النماذج ترسل ما تكتبه إلى الإنترنت، وأوامر تجلب بيانات من ملف آخر.</p>
+        <p>ومقاطع الصوت والفيديو التي فيها أوامر مخفية.</p>
+        <p>والنماذج بصيغة XFA القديمة.</p>
+        <p>وننبّهك إن كان فيه ملفات مرفقة، أو مجسّمات ثلاثية الأبعاد، أو عناصر تفاعلية مضمَّنة، أو أجزاء تالفة.</p>
+        <p>وننبّهك إن كان الملف محمياً بكلمة مرور (ولا نفحص ما في داخله)، وإن كان فيه توقيع رقمي (ولا نتحقق من صحته).</p>
+        <p><strong>ما لا نفحصه:</strong></p>
+        <p>ما قد يُخفى في الصور والخطوط لاستغلال عيب في برنامج القراءة.</p>
+        <p>ومحتوى المرفقات.</p>
+        <p>والمواقع التي تقود إليها الروابط العادية.</p>
+        <p>وما داخل الملف المحمي بكلمة مرور.</p>
+        <p>ولا نتحقق من صحة التوقيع الرقمي، ولا نعرف ماذا تفعل أوامر JavaScript بالتحديد، بل ننبّه إلى وجودها.</p>
+        <p><strong>النتائج التي تظهر لك:</strong></p>
+        <p><strong>سليم:</strong> لم نجد شيئاً مما نفحصه.</p>
+        <p><strong>يحتاج انتباهاً:</strong> فيه ما يستحقّ أن تعرفه قبل فتحه أو إرساله، وبعض النماذج السليمة فيها مثله.</p>
+        <p><strong>غير آمن:</strong> فيه أوامر مخفية قد تشغّل برنامجاً أو تفتح ملفاً على جهازك أو تنفّذ أوامر دون علمك.</p>
+        <p><strong>غير صالح:</strong> تعذّر فتح الملف، فقد يكون تالفاً أو ليس ملف PDF.</p>
+
+        <h2>الحسابات وزوّار الموقع</h2>
+        <p>لا حسابات ولا تسجيل دخول. ويُحصى عدد زوّار الموقع، ولا يصل إلى العدّاد شيء من ملفاتك أو توقيعك أو ختمك أو نصوصك.</p>
+
+        <h2>التواصل</h2>
+        <p>PDFsa من صنع مَحالة. للتواصل: <a href="https://mhalah.com" rel="noopener noreferrer"><bdi dir="ltr">mhalah.com</bdi></a> أو <a href="https://wa.me/966592653513?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%A3%D9%83%D8%AA%D8%A8%20%D8%A5%D9%84%D9%8A%D9%83%D9%85%20%D9%85%D9%86%20%D9%85%D9%88%D9%82%D8%B9%20PDFsa." target="_blank" rel="noopener" data-wa-from="privacy" data-test="wa-privacy">واتساب مَحالة</a></p>
+
+        <p class="policy-date"><strong>آخر تحديث:</strong> ١٣ نوفمبر ٢٠٢٦م</p>
+      </article>
+    </main>
+  </body>
+</html>

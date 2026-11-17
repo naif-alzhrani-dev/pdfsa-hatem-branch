@@ -1,0 +1,634 @@
+/* «إعداد خطاب» (مواصفة 👩‍🎨 لمى، docs/logs/letter-lama-spec.md): من رموز المنشور (src/style.css)، والورقة بيضاء في الوضعين.
+   الحركة transform وopacity وحدهما وأقلّ من 300ms، ومع تقليل الحركة بلا scale ولا دوران. */
+
+/* رموز جديدة للورقة (٠-١): ثابتة في الوضعين، إلا --lift-pop */
+:root {
+  --ink-paper-3: #5E5C74;
+  --letter-ink: #000000;
+  --sel-paper: rgb(47 111 208 / .22);
+  --lift-pop: 0 0 0 1px rgb(29 27 48 / .08), 0 4px 10px rgb(29 27 48 / .08), 0 12px 32px rgb(29 27 48 / .12);
+  /* العمود الطافي فوق الورقة (مواصفة لمى الطافية §٢): الحافّة تحمل الفصل نهاراً، و--lift-float ليلاً */
+  --lift-rail: 0 0 0 1px rgb(29 27 48 / .12), 0 4px 12px rgb(29 27 48 / .10), 0 12px 32px rgb(29 27 48 / .14);
+}
+@media screen and (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --lift-pop: var(--lift-float); --lift-rail: var(--lift-float); } }
+:root[data-theme="dark"] { --lift-pop: var(--lift-float); --lift-rail: var(--lift-float); }
+
+/* الخطوط الستة (--lf) وشبكتها .lt-fonts/.lt-fo في src/font-pick.css، مشتركةً مع أدوات الكتابة */
+
+.lt { --k: 1.31px; min-block-size: 100dvh; display: flex; flex-direction: column; padding-block-end: 150px; }
+.lt-top { grid-template-columns: 44px 1fr 44px; }
+.lt-title { margin: 0; font-size: 16px; font-weight: 600; text-align: center; }
+.lt-seg { margin: 8px 4px 0; }
+.lt-grid { padding-block: 12px; }
+.lt-row, .lt-alert { margin-inline: 12px; }
+.lt-preview { padding-inline: 12px; }
+.lt-kbopen .lt-seg { display: none; }
+.lt[data-view="write"] .lt-preview, .lt[data-view="preview"] .lt-write { display: none; }
+
+/* بطاقة «شكل الصفحة» */
+.lt-row { display: flex; align-items: center; gap: 16px; }
+.lt-setup {
+  display: flex; align-items: center; gap: 12px; inline-size: 100%; min-block-size: 56px; padding: 6px 12px; border: 0; border-radius: 12px;
+  background: var(--card); box-shadow: var(--lift-paper); color: var(--ink-1); font: inherit; text-align: start; cursor: pointer;
+}
+.lt-card-text { display: flex; flex-direction: column; min-inline-size: 0; }
+.lt-card-name { font-size: 16px; font-weight: 600; line-height: 1.3; }
+.lt-card-sum { font-size: 14px; color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
+.lt-change { margin-inline-start: auto; font-size: 16px; font-weight: 600; color: var(--stamp); flex: none; }
+.lt-thumb { position: relative; flex: none; inline-size: 20px; block-size: 28px; background: var(--paper); border-radius: 2px; box-shadow: 0 0 0 1px var(--desk-deep); }
+.lt-thumb[data-frame="thin"] { box-shadow: 0 0 0 1px var(--desk-deep), inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--letter-ink); }
+.lt-thumb[data-frame="double"] { box-shadow: 0 0 0 1px var(--desk-deep), inset 0 0 0 2px var(--paper), inset 0 0 0 3px var(--letter-ink), inset 0 0 0 4px var(--paper), inset 0 0 0 5px var(--letter-ink); }
+.lt-thumb.has-header::before { content: ""; position: absolute; inset-inline: 3px; inset-block-start: 3px; block-size: 4px; background: var(--paper-guide); }
+.lt-thumb.big { inline-size: 45px; block-size: 64px; }
+.lt-tpl-top { display: none; }
+
+/* المحرّر على ورقة (٠-٣) */
+.lt-cardbox { margin-block-start: 12px; }
+/* الكتابة على الصفحة (v2 الدفعة د، مواصفة لمى §٠ و§٢): --k = 1.3333px × --z، والتكبير بالمقاسات لا بـtransform.
+   الصفحات (.lt-wpage) خلف المحرّر بمواضعها، والمحرّر بهوامش الصفحة الأولى، وحدّ كل صفحة .lt-gap يضبط ارتفاعَه ui.ts (fitGaps) */
+.lt-stage { --z: 1; --k: calc(var(--z) * 1.333333px); overflow-x: auto; touch-action: pan-x pan-y; padding: 12px; background: var(--field); }
+.lt-stage.fit { display: flex; justify-content: center; overflow-x: clip; } /* حتى «عرض السطر»: الصفحة في الوسط بلا تمرير أفقي */
+.lt-sheetbox { position: relative; flex: none; inline-size: calc(var(--k) * 595.28); margin-inline: auto; }
+.lt-wpages { position: absolute; inset: 0; pointer-events: none; }
+.lt-wpage { position: absolute; inset-inline-start: 0; inline-size: calc(var(--k) * 595.28); block-size: calc(var(--k) * 841.89); overflow: hidden; background: var(--paper); box-shadow: var(--lift-page); }
+.lt-wbg { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.lt-whd { position: absolute; object-fit: contain; }
+.lt-wframe { position: absolute; border-style: solid; border-color: var(--letter-ink); }
+/* دليل الهوامش (§١): مستطيل المتن ١٫٥ ثانية بعد إغلاق «شكل الصفحة»، ولا يُطبع */
+.lt-wguide { position: absolute; border: 1px dashed var(--paper-guide); opacity: 0; transition: opacity 160ms var(--ease-out); }
+.lt-wpages.guide .lt-wguide { opacity: 1; }
+.lt-editor { position: relative; color: var(--ink-paper); font-family: var(--lf); }
+.lt-gap { display: block; block-size: 0; pointer-events: none; user-select: none; }
+/* التاريخ (v2 الدفعة ب، مواصفة لمى §٥): زرّ بلون الحبر. ومساحة لمسه تمتدّ إلى حافّة الورقة العليا (14px) لا 30px:
+   ارتفاعه 33px فيبلغ 47 فوق الـ44، و30px كانت تغطّي أسفل بطاقة «شكل الصفحة» بـ4px على 390. والشكل من data-form وdata-cal */
+.lt-date, .lt-dprev { display: flex; flex-wrap: wrap; justify-content: space-between; column-gap: 8px; row-gap: 2px; color: var(--ink-paper); }
+.lt-date {
+  /* بارتفاع المحرّك: أسطر 1.85 بلا فراغ بينها، وبعدها 8 مم (DATE_GAP) */
+  position: relative; font-size: calc(var(--k) * 11); line-height: 1.85; row-gap: 0; padding-block-end: calc(var(--k) * 11.339); margin-block-end: calc(var(--k) * 11.339 - 1px); border-block-end: 1px solid var(--paper-line);
+  border-radius: 4px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.lt-date::before { content: ""; position: absolute; inset: -14px 0 0; }
+.lt-date:focus-visible { outline: 2px solid var(--focus-paper); outline-offset: 2px; }
+:is(.lt-date, .lt-dprev)[data-form="right"] { flex-direction: column; align-items: flex-start; }
+:is(.lt-date, .lt-dprev)[data-form="left"] { flex-direction: column; align-items: flex-end; }
+/* ورقة التاريخ: شريحة المعاينة على الورقة بخطّ الخطاب، ومصغّرات الشكل 64px */
+.lt-dprev { min-block-size: 56px; padding: 8px 14px; align-content: center; border-radius: 8px; background: var(--paper); box-shadow: var(--lift-page); font: 16px/1.5 var(--lf); }
+.lt-dthumb { position: relative; inline-size: 64px; block-size: 40px; background: var(--paper); box-shadow: 0 0 0 1px var(--desk-deep); }
+.lt-dthumb i { position: absolute; inset-block-start: 9px; inline-size: 18px; block-size: 3px; border-radius: 2px; background: var(--letter-ink); }
+.lt-dthumb i:first-child { inset-inline-start: 7px; }
+.lt-dthumb i:last-child { inset-inline-end: 7px; }
+.lt-dthumb[data-form="right"] i:last-child { inset-inline: 7px auto; inset-block-start: 16px; }
+.lt-dthumb[data-form="left"] i:first-child { inset-inline: auto 7px; }
+.lt-dthumb[data-form="left"] i:last-child { inset-block-start: 16px; }
+.lt-dthumb[data-cal="one"] i:last-child { display: none; }
+.lt-dthumb[data-cal="one"] i:first-child { inline-size: 26px; }
+.lt-dcal { margin-block-end: 2px; }
+.lt-ddel { align-self: center; color: var(--danger); }
+.lt-date-dlg .sheet-body { gap: var(--s3); }
+.lt-body { position: relative; }
+.lt-text {
+  outline: none; font-size: calc(var(--k) * 13); line-height: 1.85; white-space: pre-wrap; overflow-wrap: break-word;
+  caret-color: var(--ink-paper); color: var(--ink-paper); /* بلا text-wrap: pretty: المحرّك يقصّ الأسطر بالجشع، وWebKit بـpretty ينزل كلمة فيفترق انكسار السطر (الدفعة د) */
+}
+.lt-text p { margin: 0 0 calc(var(--k) * 9.071); } /* PARA_GAP = 3.2 مم */
+/* الجدول («تحرير الملف»، مواصفة لمى §٣): العرض عرض المتن، والأعمدة من col (CSSOM)، والحشوة CELL_PAD = 0.19 سم والحدّ BORDER_W = ½ نقطة
+   كما في layout.ts. وبلا حدود في Word: خطّ إرشاد منقّط بالسُّمك نفسه في «الكتابة» وحدها، فلا يُطبع (المعاينة وPDF من المحرّك) */
+.lt-text .lt-table { inline-size: 100%; table-layout: fixed; border-collapse: collapse; margin: 0 0 calc(var(--k) * 9.071); }
+.lt-text .lt-table td { direction: rtl; vertical-align: top; padding: 0 calc(var(--k) * 5.386); border: max(1px, calc(var(--k) * .5)) dashed rgb(0 0 0 / .25); }
+.lt-text .lt-table.bd td { border-style: solid; border-color: var(--letter-ink); }
+/* كالمحرّك (layout.ts، lines: لا يُقصّ داخل الكلمة): رقمٌ أعرض من عمود ضيّق لا يُكسر حرفاً حرفاً («26» سطراً واحداً) */
+.lt-text .lt-table td { overflow-wrap: normal; }
+.lt-text .lt-table td p:last-child { margin-block-end: 0; }
+/* حدّ الصفحة قبل صفّ جدول (editor.ts، gapRow): صفٌّ فارغ بلا حدود يضبط ارتفاعَه fitGaps */
+.lt-text .lt-table tr.lt-gap { display: table-row; }
+.lt-text .lt-table tr.lt-gap > td { padding: 0; border: none; }
+.lt-text .lt-table td:focus-within { box-shadow: inset 0 0 0 2px var(--focus-paper); }
+.lt-text ::selection { background: var(--sel-paper); }
+.lt-text .al-center { text-align: center; }
+.lt-text .al-justify { text-align: justify; }
+/* «يسار» (مواصفة لمى §٨): الاستثناء المكتوب بقرار نايف من قاعدة الخصائص المنطقية، في محاذاة النصّ وحدها */
+.lt-text .al-left { text-align: left; }
+/* «يمين ويسار» (§٧): علامة الانقسام لا تُطبع، وما بعدها يعوم إلى يسار آخر سطر (المحرّك: paraLines وSPLIT_GAP = 4pt) */
+.lt-text .lt-split { display: inline-block; inline-size: 0; block-size: 1.2em; vertical-align: -0.25em; border-inline-start: 1px dotted var(--paper-guide); }
+.lt-text .lt-left { float: inline-end; margin-inline-start: calc(var(--k) * 4); }
+.lt-text ol, .lt-text ul { margin: 0 0 calc(var(--k) * 9.071); padding-inline-start: calc(var(--k) * 25.512); } /* LIST_INDENT = 9 مم */
+.lt-text ol { list-style: arabic-indic; }
+.lt-text li p { margin: 0; }
+.lt-text .fs-11 { font-size: calc(var(--k) * 11); }
+.lt-text .fs-12 { font-size: calc(var(--k) * 12); }
+.lt-text .fs-14 { font-size: calc(var(--k) * 14); }
+.lt-text .fs-16 { font-size: calc(var(--k) * 16); }
+.lt-text .fs-18 { font-size: calc(var(--k) * 18); }
+.lt-text .fs-20 { font-size: calc(var(--k) * 20); }
+.lt-text .fs-24 { font-size: calc(var(--k) * 24); }
+/* «صفحة جديدة» اليدوية: شارة في آخر صفحتها، ثم حدّ الصفحة (§٢) */
+.lt-pb { inline-size: fit-content; margin: 0; padding-inline: 2px; border-radius: 4px; font: 500 14px/20px var(--font); color: var(--ink-paper-3); }
+.lt-pb.ProseMirror-selectednode { outline: 2px solid var(--focus-paper); outline-offset: 2px; }
+.lt-empty { position: absolute; inset-block-start: 0; inset-inline: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; pointer-events: none; }
+.lt-empty[hidden] { display: none; }
+.lt-empty p { margin: 0; font-size: calc(var(--k) * 13); line-height: 1.85; color: var(--ink-paper-3); }
+.lt-tpl { pointer-events: auto; min-block-size: 44px; padding: 0; border: 0; background: none; font: 600 16px var(--font); color: var(--mark-paper); cursor: pointer; }
+.lt-count { margin: 0; padding: 8px 16px 10px; font-size: 14px; color: var(--ink-3); text-align: end; }
+.lt-count:not(.near) { display: none; }
+
+/* العمود على الجوال يطفو فوق الورقة (مواصفة لمى الطافية، docs/logs/letter-rail-float-lama-spec.md): لا يقتطع من المسرح، فالورقة ومقياسها لا يتغيّران.
+   الموضع المستقرّ بالتخطيط وحده (inset) بلا transform: الحركة رسمٌ مؤقّت من ui.ts (animateRail) لا يُبقي إزاحةً إن انقطع.
+   مطويّاً يُخفى العمود ويبقى اللسان، ومفتوحاً يختفي اللسان وزرّ الإغلاق آخر خانة في العمود.
+   الموضع من [data-dock] (ستّة بقرار نايف، المبنيّ right-bottom وحده)، والمحور من [data-axis]: ما لا يتبع الجهة هنا، وما يتبعها تحتهما */
+.lt-railbox { position: fixed; z-index: 30; pointer-events: none; }
+.lt-railbox[hidden] { display: none; }
+.lt-rail {
+  box-sizing: border-box; display: flex; align-items: center; gap: 4px;
+  overflow: auto; overscroll-behavior: contain; background: var(--sheet); box-shadow: var(--lift-rail); pointer-events: auto;
+}
+.lt-railbox:not(.open):not(.leaving) .lt-rail { visibility: hidden; }
+.lt-railtab {
+  position: absolute; padding: 0; border: 0; background: none;
+  display: flex; align-items: center; color: var(--ink-1); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  pointer-events: auto; transition: transform var(--d-press) var(--ease-out);
+}
+.lt-railbox.open .lt-railtab { display: none; }
+.lt-railface { display: grid; place-items: center; background: var(--sheet); box-shadow: var(--lift-pop); }
+/* المحور الرأسيّ: سماكة 52، والفاصل 24×1، واللسان 32×56 (لمسه 44×56) */
+.lt-railbox[data-axis="v"] .lt-rail { inline-size: 52px; flex-direction: column; padding: 6px 4px; }
+.lt-railbox[data-axis="v"] .lt-rail .lt-sep { inline-size: 24px; block-size: 1px; margin: 0; }
+.lt-railbox[data-axis="v"] .lt-railtab { inline-size: 44px; block-size: 56px; }
+.lt-railbox[data-axis="v"] .lt-railface { inline-size: 32px; block-size: 56px; }
+/* يمين أسفل: على حافّة اليمين (RTL: البداية)، والأسفل من kbLayout، والانحناء على الجهة الداخلية، واللسان عند نهاية العمود */
+.lt-railbox[data-dock="right-bottom"] { inset-inline-start: 0; inset-block-end: 8px; }
+.lt-railbox[data-dock="right-bottom"] .lt-rail { border-start-end-radius: 14px; border-end-end-radius: 14px; }
+.lt-railbox[data-dock="right-bottom"] .lt-railtab { inset-inline-start: 0; inset-block-end: 0; justify-content: flex-start; }
+.lt-railbox[data-dock="right-bottom"] .lt-railface { border-start-end-radius: 12px; border-end-end-radius: 12px; }
+.lt-tb {
+  flex: none; inline-size: 44px; block-size: 44px; padding: 0; border: 0; border-radius: 10px; background: none; color: var(--ink-1);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: transform var(--d-press) var(--ease-out);
+}
+.lt-tb[aria-pressed="true"], .lt-tb[aria-expanded="true"] { background: var(--stamp-wash); color: var(--stamp); }
+/* زرّ الإغلاق فعلٌ لا حال: محايد مع aria-expanded="true" (سؤال سامي ١ في المواصفة الطافية) */
+.lt-tb.lt-railclose[aria-expanded="true"] { background: none; color: var(--ink-1); }
+.lt-a { font-family: var(--lf); font-size: 22px; font-weight: 700; line-height: 1; }
+.lt-sep { flex: none; inline-size: 1px; block-size: 24px; margin-inline: 6px; background: var(--desk-deep); }
+.lt-plus svg { transition: transform var(--d-quick) var(--ease-out); }
+.lt-plus[aria-expanded="true"] svg { transform: rotate(45deg); }
+
+/* لوحتا «+» و«أ» مكان لوحة المفاتيح */
+.lt-panel { position: fixed; z-index: 29; inset-inline: 0; inset-block-end: 0; overflow-y: auto; padding: 12px 16px 28px; background: var(--sheet); box-shadow: 0 -1px 0 var(--hair); }
+.lt-panel[hidden], .lt-pop[hidden], .lt-menu[hidden] { display: none; }
+.lt-panel-open .lt-panel { animation: lt-fade 150ms var(--ease-out); }
+@keyframes lt-fade { from { opacity: 0; } }
+@keyframes lt-alert-in { from { opacity: 0; transform: translateY(-4px); } }
+/* «حفظ الملف» في الشريط العلوي (letter-save-top §٢): ليلاً حلقة مخفَّفة (توهّج 8px لا 20px) في هذا الزرّ وحده */
+@media screen and (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lt-top-end .lt-save { --stamp-ring: inset 0 0 0 1.5px rgb(224 233 241 / .55), 0 0 8px rgb(0 69 140 / .6); } }
+:root[data-theme="dark"] .lt-top-end .lt-save { --stamp-ring: inset 0 0 0 1.5px rgb(224 233 241 / .55), 0 0 8px rgb(0 69 140 / .6); }
+.lt-pgroup { margin-block-end: 8px; border-radius: 12px; background: var(--card); box-shadow: var(--lift-paper); overflow: hidden; }
+/* «تحرير الملف» (مواصفة لمى §٢): شريط المصدر قبل «شكل الصفحة» بأسلوب .lt-pgroup، والاسم 14/600 وزرّ إخفاء 44×44 */
+.lt-from { margin-block-end: 8px; border-radius: 12px; background: var(--card); box-shadow: var(--lift-paper); padding-inline-start: 12px; }
+.lt-from-head { display: flex; align-items: center; gap: 8px; }
+.lt-from-name { flex: 1 1 auto; min-inline-size: 0; margin: 0; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.lt-from-head .icon-btn { inline-size: 44px; block-size: 44px; flex: none; }
+.lt-from-nm { padding: 0 12px 12px 0; font-size: 14px; }
+.lt-from-nm summary { min-block-size: 44px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: var(--ink-2); }
+.lt-from-nm summary::-webkit-details-marker { display: none; }
+/* السهم: يتجه إلى الأسفل مطويّة، ويدور إلى الأعلى مفتوحة (فهد ٢). transform وحده، وبلا حركة مع تقليلها */
+.lt-from-nm summary svg { inline-size: 20px; block-size: 20px; flex: none; transition: transform .16s ease-out; }
+.lt-from-nm[open] summary svg { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) { .lt-from-nm summary svg { transition: none; } }
+.lt-from-nm summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.lt-from-keep { margin: 8px 0 0; color: var(--ink-2); }
+.lt-prow {
+  inline-size: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; min-block-size: 50px; padding: 14px 12px; border: 0; background: none;
+  color: var(--ink-1); font: 500 16px var(--font); text-align: start; cursor: pointer;
+}
+.lt-prow + .lt-prow { box-shadow: inset 0 1px 0 var(--hair); }
+.lt-prow > svg { flex: none; color: var(--ink-2); }
+.lt-prow[aria-disabled="true"], .lt-prow[aria-disabled="true"] > svg { color: var(--ink-4); cursor: default; }
+.lt-why { margin-inline-start: auto; font-size: 14px; font-weight: 500; color: var(--ink-3); }
+.lt-mini { margin-inline-start: auto; display: grid; place-items: center; padding: 2px; border-radius: 4px; background: var(--paper); box-shadow: 0 0 0 1px var(--hair); }
+.lt-mini img { max-inline-size: 100%; max-block-size: 100%; object-fit: contain; }
+.lt-mini.sig { inline-size: 48px; block-size: 22px; }
+.lt-mini.stamp { inline-size: 24px; block-size: 24px; }
+.lt-mini.logo { inline-size: 38px; block-size: 23px; }
+.lt-chev { display: inline-flex; color: var(--ink-4); }
+.lt-plabel + .lt-chev { margin-inline-start: auto; }
+.lt-palert { margin: 8px 0 0; color: var(--danger); font-size: 14px; }
+.lt-subhead { display: flex; align-items: center; gap: 8px; margin-block-end: 8px; }
+.lt-subhead h2 { flex: 1; margin: 0; font-size: 16px; font-weight: 600; text-align: center; }
+.lt-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-block-end: 12px; }
+.lt-tile { block-size: 84px; padding: 6px; border: 0; border-radius: 12px; background: var(--paper); box-shadow: 0 0 0 1px var(--hair); display: grid; place-items: center; cursor: pointer; }
+.lt-tile img { max-inline-size: 100%; max-block-size: 100%; object-fit: contain; }
+.lt-pempty { text-align: center; padding-block: 12px; }
+.lt-srcs { display: flex; flex-wrap: wrap; gap: 12px; }
+.lt-srcs .lt-draw { flex-basis: 100%; } /* «ارسم توقيعك» صفّ كامل تحت المصدرين، كما في الرئيسية (§٣) */
+.lt-plab { margin: 0 0 8px; font-size: 14px; font-weight: 500; color: var(--ink-3); }
+.lt-sizes { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; margin-block-end: 14px; }
+.lt-size {
+  block-size: 44px; padding: 0; border: 0; border-radius: 10px; background: var(--card); box-shadow: var(--lift-paper);
+  font: 600 16px var(--font); font-variant-numeric: tabular-nums; color: var(--ink-1); cursor: pointer;
+}
+.lt-size[aria-checked="true"] { background: var(--stamp-wash); color: var(--stamp); box-shadow: inset 0 0 0 2px var(--stamp); }
+/* «خطوط الجهاز» في برنامج ويندوز (مواصفة لمى، system-fonts-list-lama-spec.md): في لوحة «أ» تحت الستّة بعمود واحد وصفوف 44، وفي القائمة 40 */
+.lt-sys { margin-block-start: 6px; padding-block-start: 6px; box-shadow: inset 0 1px 0 var(--hair); }
+.lt-syshead { position: sticky; inset-block-start: 0; z-index: 1; padding-block-end: 6px; background: var(--card); }
+.lt-panel .lt-syshead { background: var(--sheet); }
+.lt-syslab { display: flex; align-items: center; justify-content: space-between; margin: 0 0 6px; }
+.lt-sysq { box-sizing: border-box; inline-size: 100%; block-size: 36px; padding-inline: 10px; border: 0; border-radius: 8px; background: var(--desk); color: var(--ink-1); font: 15px var(--font); }
+.lt-sysq::placeholder { color: var(--ink-3); }
+.lt-sysq:disabled { color: var(--ink-4); }
+.lt-sysq:disabled::placeholder { color: var(--ink-4); }
+.lt-sysq:focus-visible { outline: 2px solid var(--focus); outline-offset: 0; }
+.lt-sysq[hidden], .lt-sysmsg[hidden] { display: none; }
+.lt-syslist { display: flex; flex-direction: column; gap: 2px; }
+.lt-sysf { position: relative; flex: none; display: flex; align-items: center; block-size: 44px; padding-inline: 10px; border: 0; border-radius: 8px; background: none; color: var(--ink-1); font: 400 15px var(--font); text-align: start; cursor: pointer; content-visibility: auto; contain-intrinsic-size: auto 44px; }
+.lt-sysname { min-inline-size: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lt-sysf[aria-busy="true"] .lt-sysname { padding-inline-end: 24px; }
+.lt-sysf .spinner { position: absolute; inset-inline-end: 10px; inset-block-start: calc(50% - 9px); }
+.lt-sysf[aria-checked="true"] { background: var(--stamp-wash); color: var(--stamp); font-weight: 600; }
+.lt-sysf:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--focus); }
+.lt-syssep { flex: none; block-size: 1px; margin-block: 4px; background: var(--hair); }
+.lt-sysmsg { margin: 0; padding: 10px; font-size: 14px; color: var(--ink-3); }
+.lt-syserr { margin: 0; padding: 2px 10px 6px; font-size: 13px; color: var(--danger); }
+/* خط المقطع (الدفعة ٣، مواصفة لمى): علامة letterFont بخطّها، والتحديد المحفوظ ظاهرٌ ما دامت لوحة الخط مفتوحة على الجوال (التركيز زال)،
+   وصفّ «خط الخطاب (…)» بعرض الشبكة بخط الواجهة، والاسم صورة (.fo-name) في وسط زرّه، والمختلط بخط الواجهة */
+.lt-text .lfm { font-family: var(--lf); }
+.lt-held { background: color-mix(in srgb, var(--focus) 25%, transparent); }
+button.lt-fo { display: grid; place-items: center; }
+.lt-fo-letter { grid-column: 1 / -1; font-family: var(--font); font-size: 16px; }
+.lt-a.lt-mixed, .lt-fname.lt-mixed { font-family: var(--font); }
+.lt-fonterr { padding-inline: 0; }
+.lt-fonterr:empty { display: none; }
+@media (hover: hover) { .lt-sysf:hover:not([aria-checked="true"]) { background: var(--desk); } }
+
+/* حبّة الدرجة (§٢): 144×44، و«−» 44 والقيمة 56 و«+» 44، وقائمتها 180 إلى الأعلى */
+.lt-zoom { position: fixed; z-index: 28; inset-inline-end: 12px; inset-block-end: calc(12px + var(--rail-occupy-bottom, 0px)); display: flex; align-items: center; inline-size: 144px; block-size: 44px; border-radius: 22px; background: var(--sheet); box-shadow: var(--lift-pop); }
+.lt[data-view="preview"] .lt-zoom { display: none; }
+.lt-zbtn, .lt-zval { flex: none; block-size: 44px; padding: 0; border: 0; border-radius: 22px; background: none; color: var(--ink-1); cursor: pointer; }
+.lt-zbtn { inline-size: 44px; display: inline-flex; align-items: center; justify-content: center; transition: transform var(--d-press) var(--ease-out); }
+.lt-zval { inline-size: 56px; font: 600 14px var(--font); font-variant-numeric: tabular-nums; }
+.lt-zbtn[aria-disabled="true"] { color: var(--ink-4); cursor: default; }
+.lt-zmenu { position: fixed; z-index: 31; inline-size: 180px; display: flex; flex-direction: column; gap: 2px; padding: 6px; border-radius: 14px; background: var(--card); box-shadow: var(--lift-pop); animation: lt-pop 160ms var(--ease-out); }
+.lt-zm { justify-content: space-between; }
+.lt-zm[aria-checked="true"] { background: none; box-shadow: none; color: var(--stamp); font-weight: 600; }
+
+/* قائمة المحاذاة */
+.lt-alignmenu { position: fixed; z-index: 31; inset-inline: 60px auto; inline-size: 148px; display: flex; flex-direction: column; gap: 2px; padding: 6px; border-radius: 14px; background: var(--card); box-shadow: var(--lift-pop); animation: lt-pop 160ms var(--ease-out); }
+@keyframes lt-pop { from { opacity: 0; transform: scale(.95); } }
+.lt-am { block-size: 48px; display: flex; align-items: center; gap: 10px; padding-inline: 12px; border: 0; border-radius: 10px; background: none; color: var(--ink-1); font: 500 14px var(--font); cursor: pointer; }
+.lt-am[aria-checked="true"] { background: var(--stamp-wash); color: var(--stamp); font-weight: 600; box-shadow: inset 0 0 0 2px var(--stamp); }
+.lt-am > svg { flex: none; }
+.lt-am[aria-disabled="true"], .lt-tb[aria-disabled="true"] { color: var(--ink-4); cursor: default; }
+.lt-amsep { flex: none; block-size: 1px; margin: 4px 8px; background: var(--hair); }
+
+/* المعاينة (§٣) */
+.lt-preview { padding: 4px 0; }
+.lt-pages { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.lt-fig { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.lt-page { position: relative; overflow: hidden; background: var(--paper); box-shadow: var(--lift-page); }
+.lt-canvas { display: block; inline-size: 100%; block-size: 100%; }
+.lt-pnum { margin: 0; font-size: 14px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.lt-hint { margin: 0 0 8px; text-align: center; font-size: 14px; color: var(--ink-3); }
+.lt-hint[hidden] { display: none; }
+/* تلميح المعاينة (§٤): بطاقة فوق الصفحة الأولى، و«الكتابة» فيه زرّ نصّ، ويختفي بالشفافية وtranslateY(-4px) في 160ms */
+.lt-phint {
+  box-sizing: border-box; display: flex; align-items: center; gap: 8px; min-block-size: 44px; margin: 0 12px 8px; padding: 10px 12px; padding-inline-end: 0;
+  border-radius: 12px; background: var(--card); box-shadow: var(--lift-paper); color: var(--ink-1); transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.lt-phint[hidden] { display: none; }
+.lt-phint.leaving { opacity: 0; transform: translateY(-4px); }
+.lt-phint-ic { flex: none; display: inline-flex; color: var(--ink-2); }
+.lt-phint-text { flex: 1; margin: 0; font-size: 14px; font-weight: 500; line-height: 1.5; }
+.lt-phint-link { display: inline; min-block-size: 0; padding: 0; border: 0; background: none; font: inherit; font-weight: 600; color: var(--stamp); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.lt-phint-x { flex: none; inline-size: 44px; block-size: 44px; margin-block: -10px; }
+/* مقبض السحب (§٤): حبّة 28×14 وسط الحافّة السفلية (inset-block-end: -10px) فيها ست نقاط، ولمسه 44×44. على الورقة: رموزها وحدها */
+.item-grip { position: absolute; inset-inline: 0; inset-block-end: -25px; margin-inline: auto; inline-size: 44px; block-size: 44px; display: grid; place-items: center; }
+.item-grip::before, .item-grip::after, .lt-wgrip::before, .lt-wgrip::after { content: ""; grid-area: 1 / 1; }
+.item-grip::before, .lt-wgrip::before { inline-size: 28px; block-size: 14px; border-radius: 7px; background-color: var(--paper); box-shadow: 0 0 0 1px var(--paper-guide); }
+.item-grip::after, .lt-wgrip::after { inline-size: 15px; block-size: 10px; background: radial-gradient(circle, var(--mark-paper) 0 1px, transparent 1.2px) 0 0 / 5px 5px; }
+.item.sel .item-grip::before { background-color: var(--mark-paper); box-shadow: none; }
+.item.sel .item-grip::after { background-image: radial-gradient(circle, var(--paper) 0 1px, transparent 1.2px); }
+.item.dragging, .item.dragging .item-grip { cursor: grabbing; }
+/* تحريك العناصر في «الكتابة» (مواصفة لمى ٢٠٢٦/١١/١٥): نسخ الصور فوق كل النصّ، والمربّعات فوق المتن والتاريخ، كترتيب رسم PDF.
+   والمقبض شكل .item-grip، ولمسه 44×44 يبدأ قبل حافّة صاحبه بـ4px ويمتدّ 40px خارجه، فتبقى اللمسة على النصّ للكتابة */
+.lt-wimgs { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.lt-witem { position: absolute; pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; }
+.lt-witem img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; max-inline-size: none; object-fit: contain; pointer-events: none; -webkit-user-drag: none; }
+.lt-witem::after { transition: opacity 160ms var(--ease-out); }
+.lt-wgrip { position: absolute; inset-inline: 0; inset-block-end: -40px; margin-inline: auto; inline-size: 44px; block-size: 44px; display: grid; place-items: start center; touch-action: none; cursor: grab; pointer-events: auto; }
+.lt-tbox:focus-within .lt-wgrip::before, .dragging > .lt-wgrip::before, .sel > .lt-wgrip::before { background-color: var(--mark-paper); box-shadow: none; }
+.lt-tbox:focus-within .lt-wgrip::after, .dragging > .lt-wgrip::after, .sel > .lt-wgrip::after { background-image: radial-gradient(circle, var(--paper) 0 1px, transparent 1.2px); }
+.lt-witem.dragging, .dragging > .lt-wgrip { cursor: grabbing; }
+/* المعاينة بترتيب PDF نفسه: التاريخ ثم المربّعات ثم الصور (pdf.ts) */
+.lt-page > .item { z-index: 2; }
+.lt-page > .item.lt-float { z-index: 1; }
+.lt-page > .item.lt-float[data-kind="date"] { z-index: 0; }
+/* مربّع النصّ والتاريخ المحرَّك (v2 الدفعة و). في «الكتابة»: المربّع فوق المتن بموضعه، وحدّه متقطّع لا يُطبع،
+   وآخر فقرة فيه بلا فراغ بعدها كالمحرّك (ارتفاعه أسفل آخر سطر). وفي «معاينة الصفحة»: لوحة نصّه من المحرّك داخل .item */
+.lt-boxes { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.lt-tbox { position: absolute; pointer-events: auto; border-radius: 2px; outline: 1px dashed var(--paper-guide); outline-offset: calc(var(--k) * 2); }
+.lt-tbox:focus-within { outline: 2px solid var(--focus-paper); }
+.lt-tbox .lt-text > :last-child { margin-block-end: 0; }
+/* الشريط العائم للمحدَّد في «الكتابة» (docs/logs/letter-write-bar-lama-spec.md): يرث .fbar (style.css) وعرضه بأزراره (153 للصور، 52 للمربّع).
+   والزوايا على نسخة «الكتابة» من .item::after (style.css)، والمربّع بإطارها نفسه، ولا مقابض زوايا فيها (§٣) */
+.lt-tbox::after { content: ""; position: absolute; inset: -6px; pointer-events: none; opacity: 0; }
+.lt-wbar { inline-size: auto; }
+.lt-wbar [hidden] { display: none; }
+.lt-wbar .del { color: var(--danger); }
+.lt-wbar button:disabled { color: var(--ink-4); cursor: default; }
+.lt-wbar button:disabled:active { transform: none; }
+@media (hover: hover) { .lt-wbar button:not(:disabled):hover { background-color: var(--desk); } }
+.lt-witem.leave img { opacity: 0; scale: .96; transition: opacity 120ms var(--ease-out), scale 120ms var(--ease-out); }
+.lt-date.moved { position: absolute; z-index: 1; margin: 0; }
+/* مقبض التاريخ (ملحق لمى ٢٠٢٦/١١/١٥): منطقة لمسه تصعد من أعلى المتن وسط التاريخ وفوقه، فلا تغطّي أول سطر، والحبّة والنقاط في موضعهما المعتمد */
+.lt-date > .lt-wgrip { inset-block-end: calc(var(--k) * -11.339); block-size: min(44px, calc(100% + 14px + var(--k) * 11.339)); place-items: end center; }
+.lt-date > .lt-wgrip::before { margin-block-end: calc(var(--k) * 11.339 - 10px); }
+.lt-date > .lt-wgrip::after { margin-block-end: calc(var(--k) * 11.339 - 6px); }
+.item.lt-float canvas { position: absolute; pointer-events: none; }
+.lt-typing .lt-dock { display: none; }
+.lt-alert { margin: 12px 0 0; }
+
+/* ورقة «شكل الصفحة» (§٤) */
+.lt-slab { margin: 14px 0 10px; font-size: 14px; font-weight: 500; color: var(--ink-3); }
+.lt-opts { display: grid; gap: 8px; }
+.lt-opts.two { grid-template-columns: 1fr 1fr; }
+.lt-opts.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lt-opts.hdr { grid-template-columns: 96px 1fr; }
+.lt-opt {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-block-size: 56px; padding: 11px 10px;
+  border: 0; border-radius: 12px; background: var(--card); box-shadow: var(--lift-paper); color: var(--ink-1); font: 500 14px var(--font); cursor: pointer;
+}
+.lt-opt[aria-checked="true"] { outline: 2px solid var(--mark); outline-offset: 3px; }
+.lt-opt[aria-disabled="true"] { color: var(--ink-4); cursor: default; }
+.lt-hdr-pick .lt-why { margin: 0; } /* سبب تعطّل الترويسة مع الشعار، تحت اسمها في البلاطة */
+.lt-hdr-img { max-block-size: 40px; max-inline-size: 100%; object-fit: contain; background: var(--paper); }
+.lt-fthumb { inline-size: 45px; block-size: 64px; background: var(--paper); box-shadow: 0 0 0 1px var(--desk-deep); }
+.lt-fthumb.f-thin { box-shadow: 0 0 0 1px var(--desk-deep), inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--letter-ink); }
+.lt-fthumb.f-double { box-shadow: 0 0 0 1px var(--desk-deep), inset 0 0 0 3px var(--paper), inset 0 0 0 5px var(--letter-ink), inset 0 0 0 6px var(--paper), inset 0 0 0 7px var(--letter-ink); }
+.lt-on label { white-space: nowrap; }
+/* «هوامش الصفحة» (v2 الدفعة ج، مواصفة لمى §١): مصغّر الدرجة 45×64، والمصغّر الحيّ 132×187، والعدّادان */
+.lt-mthumb::after { content: ""; position: absolute; inset-block: var(--t) var(--b); inset-inline: var(--s); background: repeating-linear-gradient(to bottom, var(--paper-guide) 0 1px, transparent 1px 4px); }
+.lt-mwhy { margin: 8px 0 0; }
+.lt-mbox { display: grid; grid-template-columns: 132px minmax(0, 1fr); gap: 16px; align-items: center; margin-block-start: 12px; }
+.lt-mmini { position: relative; inline-size: 132px; block-size: 187px; background: var(--paper); box-shadow: 0 0 0 1px var(--desk-deep); overflow: hidden; }
+.lt-mmini > * { position: absolute; }
+.lt-mmini-bg { inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; }
+.lt-mmini-frame { box-sizing: border-box; border: 1px solid var(--letter-ink); }
+.lt-mmini-box { box-sizing: border-box; border: 1px dashed var(--paper-guide); background: repeating-linear-gradient(to bottom, transparent 0 4.3px, var(--paper-line) 4.3px 5.3px); }
+.lt-mmini-box[data-edge="top"] { border-block-start: 2px solid var(--mark-paper); }
+.lt-mmini-box[data-edge="bottom"] { border-block-end: 2px solid var(--mark-paper); }
+.lt-mctl { display: flex; flex-direction: column; gap: 4px; min-inline-size: 0; }
+.lt-mrow { grid-template-columns: 44px 64px 44px; justify-content: start; row-gap: 2px; min-block-size: 0; }
+.lt-mrow .date-unit { grid-column: 1 / -1; font-size: 14px; }
+.lt-mval { font-size: 16px; font-weight: 600; }
+.lt-mrow .step[aria-disabled="true"] { color: var(--ink-4); cursor: default; }
+.lt-mrow .step[aria-disabled="true"]:active { transform: none; }
+.lt-mrestore { align-self: flex-start; min-block-size: 44px; text-align: start; }
+/* «الخلفية» (§٦) */
+.lt-bg-thumb { inline-size: 45px; block-size: 64px; object-fit: cover; box-shadow: 0 0 0 1px var(--desk-deep); }
+.lt-bg-remove { min-block-size: 44px; margin-block-start: 4px; }
+/* الخلفيات المحفوظة (الدفعة ز): بلاطات 96 عرضاً كـ«بلا»، تحت الصفّ، و«✕» كـ«المحفوظ» في الرئيسية (style.css، .tile-del) */
+.lt-bg-saved { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; padding-block-start: 2px; }
+.lt-bg-tile { inline-size: 96px; }
+.tile-wrap.pending .lt-bg-tile { opacity: .35; }
+.lt-slab-row { display: flex; align-items: center; justify-content: space-between; margin-block: 4px 0; }
+.lt-slab-row .lt-slab { margin-block: 10px 6px; }
+
+/* الحالات */
+.lt-railtab:focus-visible .lt-railface, .lt-phint-link:focus-visible, .lt-zbtn:focus-visible, .lt-zval:focus-visible, .lt-tb:focus-visible, .lt-dd:focus-visible, .lt-setup:focus-visible, .lt-tpl:focus-visible, .lt-opt:focus-visible, .lt-size:focus-visible, .lt-fo:focus-visible, .lt-am:focus-visible, .lt-tile:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.lt-prow:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--focus); }
+:is(.lt-tb, .lt-railtab, .lt-dd, .lt-setup, .lt-opt, .lt-size, .lt-fo, .lt-am, .lt-tile, .lt-zbtn:not([aria-disabled="true"]), .lt-zval, .lt-prow:not([aria-disabled="true"])):active { transform: scale(.97); }
+.lt-railtab:focus-visible { outline: none; }
+@media (hover: hover) and (pointer: fine) {
+  .lt-zbtn:not([aria-disabled="true"]):hover, .lt-zval:hover, .lt-tb:hover:not([aria-pressed="true"]):not([aria-expanded="true"]), .lt-prow:not([aria-disabled="true"]):hover, .lt-am:hover:not([aria-checked="true"]) { background: var(--desk); }
+  .lt-dd:hover { background: var(--desk-deep); }
+  .lt-tb.lt-railclose:hover { background: var(--desk); } /* القاعدة أعلاه تستثني [aria-expanded="true"] */
+  /* مقبض «الكتابة» (تحريك العناصر §٣): الحلقة بلون العلامة بلا انتقال، وبتخصيص أدنى من الحالة المصمتة فلا يغلبها */
+  :where(.lt-wgrip):hover::before { box-shadow: 0 0 0 1px var(--mark-paper); }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.lt-tb, .lt-railtab, .lt-dd, .lt-setup, .lt-opt, .lt-size, .lt-fo, .lt-am, .lt-tile, .lt-zbtn, .lt-zval, .lt-prow):active { transform: none; }
+  /* العمود: شفافية 120ms بلا انزلاق (animateRail في ui.ts) */
+  .lt-phint { transition: opacity 120ms var(--ease-out); }
+  .lt-phint.leaving { transform: none; }
+  .lt-zmenu { animation: lt-fade 120ms var(--ease-out); }
+  .lt-plus[aria-expanded="true"] svg { transform: none; }
+  .lt-alignmenu { animation: lt-fade 120ms var(--ease-out); }
+  .lt-witem::after { transition-duration: 120ms; } /* تخبو علامات الزوايا في 120ms، والسحب 1:1 */
+  .lt-witem.leave img { transition-duration: 0ms; }
+}
+/* الألوان القسرية (تحريك العناصر §٣): الحبّة بألوانها، وحدّ Highlight للمربّع المركَّز ولما يُسحب في «الكتابة» */
+@media (forced-colors: active) {
+  .lt-wgrip { forced-color-adjust: none; }
+  .lt-tbox:focus-within, :is(.lt-witem, .lt-tbox, .lt-date).dragging, :is(.lt-witem, .lt-tbox).sel { outline: 2px solid Highlight; }
+  .lt-wbar { border: 1px solid CanvasText; }
+  .lt-wbar button:disabled { color: GrayText; }
+}
+
+/* الكمبيوتر (§٦) */
+@media (min-width: 1024px) {
+  .lt { --k: 1.38px; padding-block-end: 0; }
+  .lt-top { min-block-size: 56px; }
+  .lt-title { font-size: 18px; text-align: start; }
+  .lt-seg, .lt-railbox, .lt-panel { display: none; } /* الكمبيوتر بلا عمود (§٣) */
+  .lt-grid { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 620px; padding: 0; }
+  .lt[data-view] .lt-write, .lt[data-view] .lt-preview { display: flex; }
+  .lt-write { flex-direction: column; gap: 16px; padding: 24px; background: var(--sheet); }
+  .lt-row, .lt-alert { margin-inline: 0; }
+  .lt-preview { padding-inline: 0; }
+  .lt-stage { padding-inline: 0; padding-block: 24px; }
+  .lt-bar .lt-zoom { position: static; margin-inline-start: auto; inline-size: auto; block-size: 40px; border-radius: 10px; background: var(--desk); box-shadow: none; }
+  .lt-bar .lt-zbtn, .lt-bar .lt-zval { block-size: 40px; border-radius: 10px; }
+  .lt-setup { inline-size: auto; flex: 0 1 420px; }
+  .lt-tpl-top { display: inline-flex; min-block-size: 44px; align-items: center; font-weight: 600; color: var(--stamp); }
+  .lt-cardbox { margin: 0; border-radius: 12px; background: var(--card); box-shadow: var(--lift-paper); overflow: hidden; }
+  .lt-bar { display: flex; align-items: center; justify-content: flex-start; gap: 2px; padding: 6px 12px; background: var(--card); box-shadow: inset 0 -1px 0 var(--hair); }
+  .lt-count, .lt-count:not(.near) { display: block; box-shadow: inset 0 1px 0 var(--hair); }
+  .lt-dd { flex: none; block-size: 40px; display: inline-flex; align-items: center; justify-content: space-between; gap: 4px; padding-inline: 10px; border: 0; border-radius: 10px; background: var(--desk); color: var(--ink-1); font: 500 16px var(--font); cursor: pointer; }
+  .lt-dd[aria-expanded="true"] { background: var(--stamp-wash); color: var(--stamp); box-shadow: inset 0 0 0 2px var(--stamp); }
+  .lt-dd-ins { inline-size: 64px; }
+  .lt-dd-ins[aria-expanded="true"] svg:first-child { transform: rotate(45deg); }
+  .lt-dd-font { inline-size: 176px; }
+  .lt-dd-size { inline-size: 76px; font-variant-numeric: tabular-nums; }
+  .lt-fname { font-family: var(--lf); font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lt-preview { flex-direction: column; align-items: center; gap: 8px; padding: 24px 0; }
+  /* «حفظ الملف» في طرف الشريط العلوي (مواصفة لمى letter-save-top §١–٣، قرار نايف ٢٠٢٦/١١/١٣) */
+  .lt-top { grid-template-columns: 44px minmax(0, 1fr) auto; padding-inline-end: 16px; }
+  .lt-top-end { display: flex; align-items: center; gap: 12px; }
+  .lt-top-end .lt-hint { margin: 0; font-size: 14px; font-weight: 400; color: var(--ink-3); text-align: start; white-space: nowrap; }
+  .lt-top-end .btn.lt-save { flex: none; inline-size: auto; min-block-size: 40px; block-size: 40px; border-radius: 10px; padding-inline: 20px; min-inline-size: 184px; /* حالة التحميل «جارٍ تجهيز الملف…» مقيسةً 181.14 في المتصفحين (السجلّ) */ white-space: nowrap; }
+  /* خطأ الحفظ تحت الزرّ (§٣ج)، وخطأ اللصق باقٍ تحت المحرّر */
+  .lt-alert.lt-alert-save {
+    position: fixed; z-index: 30; inset-block-start: calc(var(--topbar-h) + 8px); inset-inline-end: 16px; margin: 0;
+    max-inline-size: 352px; text-align: start; box-shadow: var(--lift-pop); animation: lt-alert-in 160ms var(--ease-out);
+  }
+  /* العمود الأيسر بلا بطاقة (§٤): قاعدة .dock العامة لا تتسرّب، */
+  .lt-dock { position: static; inline-size: 476px; padding: 0; background: none; border: 0; overflow: visible; }
+  .lt-dock .lt-savebar { display: none; } /* فارغ على WIDE، فلا يبقى في الـdock إلا شريط التحديد (وبدونه ارتفاعه 0) */
+  .lt-phint { inline-size: 476px; margin: 0; }
+  .lt-savebar { position: static; padding: 0; background: none; box-shadow: none; }
+  .lt-pop { position: absolute; z-index: 40; inline-size: 232px; padding: 6px; border-radius: 12px; background: var(--card); box-shadow: var(--lift-pop); animation: lt-pop 160ms var(--ease-out); }
+  .lt-pop .lt-pgroup { box-shadow: none; border-radius: 0; margin: 0; }
+  .lt-pop .lt-prow { min-block-size: 40px; padding: 8px 10px; border-radius: 8px; font-size: 15px; }
+  .lt-pop .lt-prow + .lt-prow { box-shadow: none; }
+  .lt-pop .lt-pgroup + .lt-pgroup { box-shadow: inset 0 1px 0 var(--hair); }
+  .lt-pop-font { inline-size: 224px; }
+  .lt-pop-font.lt-app { inline-size: 272px; overflow-y: auto; overscroll-behavior: contain; }
+  .lt-pop .lt-sysf { block-size: 40px; contain-intrinsic-size: auto 40px; }
+  .lt-pop-font .lt-fonts, .lt-pop-size .lt-sizes { grid-template-columns: 1fr; gap: 2px; margin: 0; }
+  .lt-pop-size { inline-size: 96px; }
+  .lt-pop .lt-fo, .lt-pop .lt-size { box-shadow: none; background: none; text-align: start; padding-inline: 10px; }
+  .lt-pop button.lt-fo { place-items: center start; }
+  .lt-pop .lt-fo[aria-checked="true"], .lt-pop .lt-size[aria-checked="true"] { outline: none; color: var(--stamp); font-weight: 600; background: var(--stamp-wash); }
+  .lt-alignmenu { position: absolute; inset-inline: auto; margin: 0; }
+}
+@media (min-width: 1024px) and (prefers-reduced-motion: reduce) { .lt-alert.lt-alert-save { animation: lt-fade 120ms var(--ease-out); } }
+@media (min-width: 1024px) and (max-width: 1379px) {
+  .lt-grid { grid-template-columns: minmax(0, 1fr) 400px; }
+  .lt-dock, .lt-phint { inline-size: 352px; }
+}
+
+/* ١٥ و١٨ (docs/logs/additions-12-15-18-lama-spec.md) */
+/* ١٥: «الحجم الأصلي» بعد الثلاثي بفجوة 8px، فالحبّة تتّسع له */
+.lt-zoom { inline-size: auto; }
+.lt-zreset { margin-inline-start: 8px; }
+/* ١٨: مقابض الزوايا للفأرة وحدها — دائرة 10px على زاوية إطار التحديد (inset -6px في style.css)، ومنطقة ضغطها 24×24.
+   الموضع هندسة الصفحة كـ.item (translate من يسارها)، فالزوايا بخصائص فيزيائية */
+.lt-h { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .item.sel .lt-h { position: absolute; display: grid; place-items: center; inline-size: 24px; block-size: 24px; touch-action: none; z-index: 1; }
+  .item.sel[data-kind="date"] .lt-h { display: none; }
+  .lt-h::before { content: ""; box-sizing: border-box; inline-size: 10px; block-size: 10px; border-radius: 50%; background: var(--sheet); border: 1.5px solid var(--mark-paper); }
+  .lt-h-nw { top: -18px; left: -18px; cursor: nwse-resize; }
+  .lt-h-se { bottom: -18px; right: -18px; cursor: nwse-resize; }
+  .lt-h-ne { top: -18px; right: -18px; cursor: nesw-resize; }
+  .lt-h-sw { bottom: -18px; left: -18px; cursor: nesw-resize; }
+}
+/* ١٦ إرساء العمود في ستّة مواضع (docs/logs/letter-rail-dock-lama-spec.md، وقسم ١٦ من docs/logs/additions-13-16-lama-spec.md).
+   الصفحة dir=rtl ثابت: يمين الشاشة = inset-inline-start، ويسارها = inset-inline-end. والموضع المستقرّ بالتخطيط (placeRail)، والحركة رسمٌ مؤقّت */
+.lt-rail { position: relative; overflow: visible; }
+.lt-railtools { flex: 0 1 auto; min-inline-size: 0; min-block-size: 0; display: flex; flex-direction: inherit; align-items: center; gap: inherit; overflow: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.lt-railtools::-webkit-scrollbar { display: none; }
+.lt-railbox[data-axis="v"] .lt-railtools { touch-action: pan-y; }
+.lt-rail.tight, .lt-rail.tight .lt-railtools { gap: 0; } /* المتاح دون 402 (أو 354 على الكمبيوتر) */
+/* الظلّ أثناء السحب على ::after بالشفافية وحدها */
+.lt-rail::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: var(--lift-drag), var(--lift-pop); opacity: 0; transition: opacity 160ms var(--ease-out); pointer-events: none; }
+.lt-railbox.dragging .lt-rail::after { opacity: 1; transition-duration: 100ms; }
+/* المقبض: نقاط ستّ، ولمسه 44، وtouch-action عليه وحده */
+.lt-grip { touch-action: none; color: var(--ink-3); cursor: grab; }
+.lt-railbox.dragging .lt-grip, .lt-dragsrc .lt-grip { background: var(--desk-deep); color: var(--ink-1); }
+.lt-tb.lt-grip[aria-expanded="true"] { background: var(--stamp-wash); color: var(--stamp); }
+@media (hover: hover) and (pointer: fine) { .lt-tb.lt-grip:hover:not([aria-expanded="true"]) { background: var(--desk); color: var(--ink-2); } }
+html.lt-grabbing, html.lt-grabbing * { cursor: grabbing !important; }
+/* الرأسية: اليمين كالمبنيّ (right-bottom أعلاه)، واليسار مرآته. واللسان حيث كان زرّ الإغلاق */
+.lt-railbox[data-dock="right-top"] { inset-inline-start: 0; }
+.lt-railbox[data-dock="right-top"] .lt-rail { border-start-end-radius: 14px; border-end-end-radius: 14px; }
+.lt-railbox[data-dock="right-top"] .lt-railtab { inset-inline-start: 0; inset-block-start: 0; justify-content: flex-start; }
+.lt-railbox[data-dock="right-top"] .lt-railface { border-start-end-radius: 12px; border-end-end-radius: 12px; }
+.lt-railbox[data-dock^="left"] { inset-inline-end: 0; }
+.lt-railbox[data-dock^="left"] .lt-rail { border-start-start-radius: 14px; border-end-start-radius: 14px; }
+.lt-railbox[data-dock^="left"] .lt-railtab { inset-inline-end: 0; justify-content: flex-end; }
+.lt-railbox[data-dock^="left"] .lt-railface { border-start-start-radius: 12px; border-end-start-radius: 12px; }
+.lt-railbox[data-dock="left-bottom"] .lt-railtab { inset-block-end: 0; }
+.lt-railbox[data-dock="left-top"] .lt-railtab { inset-block-start: 0; }
+/* الأفقيّان: شريط بعرض الشاشة ارتفاعه 52 بلا انحناء، والإغلاق عند يمين الشاشة والمقبض عند يسارها، والأدوات بينهما تُمرَّر (320) */
+.lt-railbox[data-axis="h"] { inset-inline: 0; block-size: 52px; overflow: clip; }
+.lt-railbox[data-axis="h"] .lt-rail { inline-size: 100%; block-size: 52px; flex-direction: row; padding: 4px 6px; border-radius: 0; }
+.lt-railbox[data-axis="h"] .lt-rail .lt-sep { inline-size: 1px; block-size: 24px; margin: 0; }
+.lt-railbox[data-axis="h"] .lt-railtools { touch-action: pan-x; }
+.lt-railbox[data-axis="h"] .lt-railtools.over { mask-image: linear-gradient(to left, transparent, #000 16px); }
+.lt-railbox[data-axis="h"] .lt-grip { margin-inline-start: auto; }
+.lt-railbox[data-dock="top"] .lt-rail { box-shadow: inset 0 1px 0 var(--hair), var(--lift-down); }
+.lt-railbox[data-dock="bottom"] .lt-rail { box-shadow: 0 -1px 0 var(--hair), var(--lift-up); }
+.lt-railbox[data-axis="h"] .lt-railtab { inset-inline-start: 8px; inline-size: 56px; block-size: 44px; justify-content: center; }
+.lt-railbox[data-axis="h"] .lt-railface { inline-size: 56px; block-size: 32px; }
+.lt-railbox[data-dock="top"] .lt-railtab { inset-block-start: 0; align-items: flex-start; }
+.lt-railbox[data-dock="top"] .lt-railface { border-end-start-radius: 12px; border-end-end-radius: 12px; }
+.lt-railbox[data-dock="bottom"] .lt-railtab { inset-block-end: 0; align-items: flex-end; }
+.lt-railbox[data-dock="bottom"] .lt-railface { border-start-start-radius: 12px; border-start-end-radius: 12px; }
+/* المواضع الستّة أثناء السحب: إطار العمود نفسه في موضعه، والأقرب أقوى */
+.lt-dzs { position: fixed; inset: 0; z-index: 29; pointer-events: none; }
+.lt-dzs[hidden] { display: none; }
+.lt-dz { position: absolute; border-radius: 14px; background: rgb(0 69 140 / .06); box-shadow: inset 0 0 0 1.5px #4D7DAE; animation: lt-fade 120ms var(--ease-out); }
+.lt-dz[data-dz="top"], .lt-dz[data-dz="bottom"] { border-radius: 0; }
+.lt-dz.near { background: rgb(0 69 140 / .14); box-shadow: inset 0 0 0 2px var(--stamp); }
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .lt-dz { background: rgb(191 221 255 / .08); box-shadow: inset 0 0 0 1.5px #00458C, inset 0 0 0 3px #BFDDFF; }
+  :root:not([data-theme="light"]) .lt-dz.near { background: rgb(191 221 255 / .18); box-shadow: inset 0 0 0 2px #00458C, inset 0 0 0 4px #BFDDFF; }
+}
+:root[data-theme="dark"] .lt-dz { background: rgb(191 221 255 / .08); box-shadow: inset 0 0 0 1.5px #00458C, inset 0 0 0 3px #BFDDFF; }
+:root[data-theme="dark"] .lt-dz.near { background: rgb(191 221 255 / .18); box-shadow: inset 0 0 0 2px #00458C, inset 0 0 0 4px #BFDDFF; }
+/* علامة السحب على الكمبيوتر (56×44: المقبض وأيقونة الأدوات)، والمصدر يبقى مكانه شفّافاً */
+.lt-dmark { position: fixed; z-index: 32; inset-block-start: 0; inset-inline-end: 0; inline-size: 56px; block-size: 44px; display: flex; align-items: center; justify-content: center; gap: 2px; border-radius: 12px; background: var(--sheet); color: var(--ink-1); box-shadow: var(--lift-drag); pointer-events: none; }
+.lt-dmark[hidden] { display: none; }
+.lt-dmark .i-grip { inline-size: 18px; block-size: 24px; color: var(--ink-3); }
+.lt-dragsrc { opacity: .4; }
+/* «نقل إلى…»: خريطة للشاشة، عمودان ×96 وأربعة صفوف ×56، بطقم .lt-alignmenu */
+.lt-dockmenu { position: fixed; z-index: 31; box-sizing: border-box; inline-size: 208px; display: grid; grid-template-columns: 96px 96px; gap: 4px; padding: 6px; border-radius: 14px; background: var(--card); box-shadow: var(--lift-pop); animation: lt-pop 160ms var(--ease-out); }
+.lt-dm { block-size: 56px; gap: 8px; padding-inline: 8px; line-height: 1.3; text-align: start; }
+.lt-dm[data-dz="top"], .lt-dm[data-dz="bottom"] { grid-column: 1 / -1; }
+.lt-dmini { flex: none; }
+.lt-dmphone { fill: none; stroke: var(--ink-3); stroke-width: 1.5; }
+.lt-dmrail { fill: var(--ink-1); }
+.lt-dm[aria-checked="true"] .lt-dmrail { fill: var(--stamp); }
+.lt-grip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .lt-dockmenu { animation: lt-fade 120ms var(--ease-out); }
+  .lt-rail::after { transition: none; }
+}
+@media (min-width: 1024px) {
+  .lt-cardbox { overflow: clip; } /* overflow: hidden يُبطل sticky */
+  .lt-bar { position: sticky; z-index: 6; inset-block-start: var(--topbar-h); }
+  .lt[data-wdock="bottom"] .lt-bar { inset-block-start: auto; inset-block-end: 0; box-shadow: inset 0 1px 0 var(--hair); }
+  .lt-bar .lt-grip { inline-size: 40px; block-size: 40px; }
+  .lt[data-wdock="v"] .lt-railbox { display: block; }
+  .lt[data-wdock="v"] .lt-bar, .lt[data-wdock="v"] .lt-railtab, .lt[data-wdock="v"] .lt-railclose { display: none; }
+  .lt[data-wdock="v"] .lt-railbox[data-dock^="right"] { inset-inline-start: 16px; }
+  .lt[data-wdock="v"] .lt-railbox[data-dock^="left"] { inset-inline-end: 16px; }
+  .lt[data-wdock="v"] .lt-rail { border-radius: 14px; }
+  .lt[data-wside="right"] .lt-grid { padding-inline-start: 84px; } /* 52 + 16 + 16 */
+  .lt[data-wside="left"] .lt-grid { padding-inline-end: 84px; }
+  /* شريط الكمبيوتر بعد ١٥ و١٦ (docs/logs/letter-desk-bar-lama.md): قياس 40 موحّد، والشكل (full/mid/two) من عرضه في placeBars */
+  .lt-bar .lt-tb { inline-size: 40px; block-size: 40px; }
+  .lt-bar .lt-zbtn { inline-size: 40px; }
+  .lt-bar .lt-zval { inline-size: 48px; }
+  .lt-bar .lt-zreset { margin-inline-start: 0; position: relative; } /* «الحجم الأصلي» داخل الحبّة بلا هامش، والهامش 8px للحبّة الطافية على الجوال */
+  .lt-bar .lt-zreset::before { content: ""; position: absolute; inset-inline-start: 0; inset-block: 10px; inline-size: 1px; background: var(--desk-deep); }
+  .lt-bar .lt-sep { margin-inline: 4px; }
+  .lt-bar[data-tier="two"] { flex-wrap: wrap; row-gap: 6px; }
+  .lt-brk { flex-basis: 100%; block-size: 0; }
+  /* صقل 1.0.2 §٢٥: في السطرين يدفع margin:auto حبّة التكبير إلى الطرف، فيبقى الفاصل قبلها معلّقاً بجانب فراغ. ترتيب placeBars: … التقسيم، فاصل، التكبير */
+  .lt-bar[data-tier="two"] .lt-sep:has(+ .lt-zoom) { display: none; }
+}
+/* صقل 1.0.2 §٢٥: على 1600 فأوسع تقف حبّة التكبير بعد الأدوات بـ16px بدل فراغ واسع إلى الطرف */
+@media (min-width: 1600px) { .lt-bar .lt-zoom { margin-inline-start: 16px; } }
+
+/* ١٤: التراجع والإعادة (مواصفة لمى، additions-14-17-lama-spec.md «الزرّان»): أيقونتان 20px، تُعكسان في RTL فيشير التراجع يميناً */
+.lt-hb { position: relative; }
+.lt-hb .ic-hist { inline-size: 20px; block-size: 20px; }
+.lt-hb:dir(rtl) .ic-hist { transform: scaleX(-1); }
+.lt-hb:disabled { color: var(--ink-4); cursor: default; }
+.lt-hb:disabled:active { transform: none; }
+.lt-hb:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* الجوال: [حفظ الملف (1fr)] [↶] [↷] بفجوة 8 */
+.lt-saverow { display: grid; grid-template-columns: minmax(0, 1fr) 44px 44px; gap: 8px; align-items: center; max-inline-size: 600px; margin-inline: auto; }
+.lt-saverow .btn { max-inline-size: none; margin: 0; }
+.lt-tip { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .lt-hb:disabled:hover { background: none; }
+  /* مبنيّ لا title: بعد 400ms من المرور، وفوراً عند التركيز بلوحة المفاتيح، ويختفي عند الضغط. الوسط متماثل فـleft هنا لا يعكسه الاتجاه */
+  .lt-tip {
+    display: block; position: absolute; z-index: 50; inset-block-start: calc(100% + 6px); left: 50%; translate: -50% 0;
+    padding: 4px 8px; border-radius: 6px; background: var(--ink-1); color: var(--card); font-size: 13px; line-height: 1.4; white-space: nowrap;
+    box-shadow: 0 0 0 2px var(--card), var(--lift-pop); /* صقل 1.0.2 §٢٥: حلقة بلون البطاقة تفصله عن حافّتها على 1440 */
+    pointer-events: none; opacity: 0; transition: opacity 150ms var(--ease-out);
+  }
+  .lt-tip kbd { font: inherit; }
+  .lt-hb:hover .lt-tip { opacity: 1; transition-delay: 400ms; }
+  .lt-hb:focus-visible .lt-tip { opacity: 1; transition-delay: 0ms; }
+  .lt-hb:active .lt-tip { opacity: 0; transition: none; }
+}
+@media (prefers-reduced-motion: reduce) { .lt-tip { transition: none; } }
+/* الكمبيوتر: الزرّان في الشريط العلوي بين التلميح و«حفظ الملف» بقياس 40 (قرار لمى على ١٤) */
+@media (min-width: 1024px) {
+  .lt-histgrp { display: flex; gap: 4px; }
+  .lt-top-end .lt-hb { inline-size: 40px; block-size: 40px; border-radius: 10px; }
+}

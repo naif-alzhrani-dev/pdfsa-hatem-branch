@@ -1,0 +1,103 @@
+/* صفحة /privacy (privacy.html): ملف CSS من الأصل نفسه، فتعمل الـCSP كما هي.
+   القيم منسوخة من :root ومن كتلة الليلي في style.css، وtests/privacy-tokens.test.ts يُسقط الاختبار إن افترقت. */
+@import "@fontsource/ibm-plex-sans-arabic/arabic-400.css";
+@import "@fontsource/ibm-plex-sans-arabic/arabic-600.css";
+@import "@fontsource/ibm-plex-sans-arabic/latin-400.css";
+
+:root {
+  color-scheme: light dark;
+  --field-top: #F8F8FB;
+  --field: #E8EEF5;
+  --glow: rgb(0 69 140 / .08);
+  --desk: #E8EEF5;
+  --card: #FFFFFF;
+  --ink-1: #1D1B30;
+  --ink-2: #44425A;
+  --ink-3: #5E5C74;
+  --stamp: #00458C;
+  --focus: #2F6FD0;
+  --plate: transparent;
+  --plate-ring: 0 0 0 0 transparent;
+  --font: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --lift-paper: 0 0 0 1px rgb(29 27 48/.06), 0 1px 2px -1px rgb(29 27 48/.08), 0 3px 8px rgb(29 27 48/.06);
+  --r-control: 12px;
+}
+:root {
+  --grad-field: radial-gradient(130% 45% at 50% 100%, var(--glow), rgb(0 69 140 / 0) 72%), linear-gradient(180deg, var(--field-top) 0%, var(--field) 47%, var(--field) 100%);
+}
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --field-top: #000E1F;
+    --field: #00172E;
+    --glow: rgb(0 69 140 / .35);
+    --desk: #00172E;
+    --card: #072E58;
+    --ink-1: #F8F8FB;
+    --ink-2: #C3D2E2;
+    --ink-3: #9AB0C8;
+    --stamp: #7BB8F4;
+    --focus: #BFDDFF;
+    --plate: transparent; /* الشعار الليلي بلا لوح (مواصفة لمى ٢٠٢٦/١١/١١، (أ)) */
+    --plate-ring: none;
+    --lift-paper: 0 0 0 1px rgb(224 233 241 / .14), 0 2px 6px rgb(0 8 22 / .45), 0 8px 20px rgb(0 8 22 / .35);
+  }
+}
+/* المفتاح اليدوي (طلب نايف ٢٠٢٦/١١/١١، زرّ الشمس والقمر): القيم نفسها حرفاً، ويحرس تطابقها tests/privacy-tokens.test.ts */
+@media screen {
+  :root[data-theme="dark"] {
+    --field-top: #000E1F;
+    --field: #00172E;
+    --glow: rgb(0 69 140 / .35);
+    --desk: #00172E;
+    --card: #072E58;
+    --ink-1: #F8F8FB;
+    --ink-2: #C3D2E2;
+    --ink-3: #9AB0C8;
+    --stamp: #7BB8F4;
+    --focus: #BFDDFF;
+    --plate: transparent; /* الشعار الليلي بلا لوح (مواصفة لمى ٢٠٢٦/١١/١١، (أ)) */
+    --plate-ring: none;
+    --lift-paper: 0 0 0 1px rgb(224 233 241 / .14), 0 2px 6px rgb(0 8 22 / .45), 0 8px 20px rgb(0 8 22 / .35);
+  }
+}
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+/* لون ما قبل الرسم الأول وما خلف حدود التمرير: لون مستقرّ التدرّج في الوضعين */
+html { background: var(--field); }
+@media print { :root { color-scheme: light; } body::before { display: none; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { font-family: var(--font); -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--desk); color: var(--ink-1); font-size: 16px; line-height: 1.7; }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: var(--grad-field); pointer-events: none; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+a { color: var(--stamp); text-underline-offset: 3px; }
+
+.policy {
+  max-inline-size: 680px; margin-inline: auto;
+  padding: calc(16px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
+}
+.policy-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-block-size: 48px; margin-block-end: 16px; }
+.policy-logo { display: block; inline-size: 120px; block-size: auto; box-sizing: content-box; padding: 6px 10px; margin: -6px -10px; border-radius: 10px; background: var(--plate); box-shadow: var(--plate-ring); }
+/* الشعار الليلي (مواصفة لمى ٢٠٢٦/١١/١١، (أ)): صورتان بمحدِّدات style.css نفسها */
+img.logo-dark { display: none; }
+@media screen { :root[data-theme="dark"] img.logo-light { display: none; } :root[data-theme="dark"] img.logo-dark { display: block; } }
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) img.logo-light { display: none; }
+  :root:not([data-theme="light"]) img.logo-dark { display: block; }
+}
+.policy-back {
+  display: inline-flex; align-items: center; min-block-size: 44px; padding-inline: 4px;
+  font-size: 14px; font-weight: 600; border-radius: var(--r-control);
+}
+.policy-sheet {
+  background: var(--card); box-shadow: var(--lift-paper); border-radius: 2px;
+  padding: 28px 20px 24px; border-block-start: 3px solid var(--stamp);
+}
+.policy-sheet h1 { margin: 0 0 12px; font-size: 22px; font-weight: 600; line-height: 1.35; }
+.policy-sheet h2 { margin: 24px 0 4px; font-size: 18px; font-weight: 600; line-height: 1.35; color: var(--ink-1); }
+.policy-sheet p { margin: 0; color: var(--ink-2); text-wrap: pretty; }
+.policy-date { margin-block-start: 28px !important; font-size: 14px; color: var(--ink-3) !important; }
+.policy-date strong { font-weight: 600; color: var(--ink-2); }
+
+@media (min-width: 560px) { .policy-sheet { padding: 40px 40px 32px; } .policy { padding-block-start: 32px; } }
